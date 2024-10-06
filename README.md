@@ -193,7 +193,8 @@ The project can be further expanded by integrating rainfall data, digital elevat
 Feel free to fork, contribute, and expand the project to suit other regions or applications.
 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.   
+
 Acknowledgements
 
 We would like to acknowledge the use of Google Earth Engine and the European Space Agency's Copernicus program for providing the Sentinel-1 SAR dataset. This project would not have been possible without their contributions to the field of remote sensing and geospatial analysis.
