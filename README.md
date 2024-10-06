@@ -1,70 +1,79 @@
 Flood Mapping and Monitoring in Nigeria
+
+Welcome to the repository for Flood Mapping and Monitoring in Nigeria, a project aimed at using geospatial technology to analyze and visualize flood-prone areas in the Niger Delta, Nigeria. This project leverages Google Earth Engine (GEE) and Sentinel-1 Synthetic Aperture Radar (SAR) data for accurate flood detection and monitoring.
 Introduction
 
-Flooding is a major environmental hazard that causes significant destruction to infrastructure, properties, and livelihoods, especially in low-lying regions like the Niger Delta in Nigeria. Understanding and monitoring flood patterns in these areas is essential for mitigation and disaster management. This project, Flood Mapping and Monitoring in Nigeria, leverages Sentinel-1 Synthetic Aperture Radar (SAR) data and Google Earth Engine (GEE) to monitor and map flood-prone areas in the Niger Delta. The repository contains a script for analyzing Sentinel-1 data to identify flooded and non-flooded areas, calculate flood statistics, and export results for further analysis and decision-making.
-Project Setup
+Flooding is a major environmental and socio-economic challenge in Nigeria, particularly in the Niger Delta region. This region experiences frequent flooding due to its low-lying terrain, poor drainage systems, and high rainfall during the rainy season. Flooding leads to displacement, destruction of property, and disruption of livelihoods. To mitigate and manage the effects of floods, there is a need for continuous monitoring, early warning systems, and accurate mapping of flood-prone areas.
 
-To get started with the project, follow these steps:
+The Flood Mapping and Monitoring in Nigeria project aims to provide a comprehensive framework for flood detection and mapping using satellite imagery, which can be integrated into disaster management systems to enhance flood prediction, preparedness, and response.
+Project Overview
 
-    Clone the repository:
+This project uses Sentinel-1 SAR data from the European Space Agency's Copernicus program, processed within the Google Earth Engine (GEE) environment. Sentinel-1's SAR capabilities are especially useful for flood detection as it can capture imagery regardless of cloud cover or light conditions, making it ideal for real-time flood monitoring.
+Objectives
 
-    bash
+    To detect and map flooded areas in the Niger Delta region using Sentinel-1 SAR imagery.
+    To calculate the extent of flooded and non-flooded areas.
+    To create visualizations that can help policymakers and disaster management agencies understand the flood dynamics.
+    To export flood and non-flood data as GeoTIFF files for further analysis.
 
-git clone git@github.com:eteh1/Flood-Mapping-and-Monitoring-in-Nigeria.git
+Key Features
 
-Navigate to the project directory:
+    Flood Detection: Identification of flood-prone areas using SAR data.
+    Visualization: Visual representation of flooded vs. non-flooded areas using custom maps and charts.
+    Export Capabilities: Export of flood data in GeoTIFF format for use in GIS and other analytical platforms.
+
+Technology Stack
+
+    Google Earth Engine (GEE): A cloud-based platform that allows for large-scale geospatial analysis.
+    Sentinel-1 SAR Data: A radar-based satellite dataset that provides high-resolution data for flood detection.
+    Git & GitHub: Version control and collaboration.
+
+Instructions for Running the Project
+
+Follow the instructions below to clone the repository, initialize the project, and run the flood detection script using Google Earth Engine.
+Step 1: Clone the Repository
 
 bash
 
-cd Flood-Mapping-and-Monitoring-in-Nigeria
+git clone git@github.com:eteh1/Flood-Mapping-and-Monitoring-in-Nigeria.git
 
-Initialize the Git repository and add the README.md file:
+This command will create a local copy of the repository on your machine.
+Step 2: Initialize the Repository and Set Up Git
+
+If this is your first time setting up the project, you'll need to initialize the Git repository.
 
 bash
 
 git init
 git add README.md
 git commit -m "first commit"
-
-Set up the main branch:
-
-bash
-
 git branch -M main
-
-Add the remote repository:
-
-bash
-
 git remote add origin git@github.com:eteh1/Flood-Mapping-and-Monitoring-in-Nigeria.git
+git push -u origin main
 
-Push the initial commit to GitHub:
+Step 3: Define the Area of Interest (AOI)
 
-bash
-
-    git push -u origin main
-
-Flood Mapping using Sentinel-1 Data
-Defining the Area of Interest (AOI)
-
-The project focuses on the Niger Delta, an area highly susceptible to flooding due to its geographic location and frequent heavy rainfall. The region is defined using the following asset in Google Earth Engine:
+You can define the Area of Interest (AOI) as follows:
 
 javascript
 
+// Define your Area of Interest (AOI)
 var aoi = projects/ee-desmondeteh/assets/Niger_Delta_;
 
-Time Period for Analysis
+Replace Niger_Delta_ with your specific area of interest (AOI) in the Google Earth Engine environment.
+Step 4: Define the Time Period for Analysis
 
-Flooding events are often seasonal or occur after significant weather events. In this script, the analysis covers the period from September 20, 2022, to October 30, 2022, which is within the flood-prone season in Nigeria:
+Specify the time period during which you want to analyze flood events:
 
 javascript
 
 var startDate = '2022-09-20';
 var endDate = '2022-10-30';
 
-Loading Sentinel-1 SAR Dataset
+Modify the startDate and endDate variables based on your needs.
+Step 5: Load and Filter Sentinel-1 SAR Data
 
-Sentinel-1 SAR imagery is particularly useful for flood mapping due to its ability to penetrate cloud cover and capture data even during adverse weather conditions. The dataset is filtered to obtain images from descending orbits with VV polarization at a resolution of 10 meters:
+Load Sentinel-1 SAR data from GEE and filter it according to specific criteria:
 
 javascript
 
@@ -77,17 +86,18 @@ var sentinel1 = ee.ImageCollection('COPERNICUS/S1_GRD')
                   .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
                   .select('VV');
 
-Creating a Median Composite Image
+Step 6: Create a Median Composite Image
 
-A median composite of the Sentinel-1 images is created to reduce noise and better identify flood-affected areas during the specified period:
+Create a median composite image for the defined time period:
 
 javascript
 
 var medianImage = sentinel1.median().clip(aoi);
 
-Identifying Flooded and Non-Flooded Areas
+This step ensures that the SAR imagery is aggregated and clipped to the AOI for further analysis.
+Step 7: Identify Flooded Areas
 
-Flooded areas are identified using a threshold value based on backscatter values in the SAR data. Areas with values below the threshold are classified as flooded:
+Apply a threshold to identify flooded areas. Adjust the floodThreshold variable based on the AOI to improve accuracy:
 
 javascript
 
@@ -95,10 +105,9 @@ var floodThreshold = -11;
 var floodedArea = medianImage.lt(floodThreshold).selfMask();
 var nonFloodedArea = medianImage.gte(floodThreshold).selfMask();
 
-This threshold is adjustable and can be refined based on the characteristics of the area of interest and historical flood data.
-Visualization
+Step 8: Visualize the Results
 
-The results are displayed on the map, with flooded areas marked in red and non-flooded areas marked in blue:
+Display the flooded and non-flooded areas on the map:
 
 javascript
 
@@ -106,9 +115,9 @@ Map.centerObject(aoi, 10);
 Map.addLayer(floodedArea, {palette: ['red'], min: 0, max: 1}, 'Flooded Area');
 Map.addLayer(nonFloodedArea, {palette: ['blue'], min: 0, max: 1}, 'Non-Flooded Area');
 
-Flood Area Statistics
+Step 9: Calculate Flood Area Statistics
 
-To quantify the impact of flooding, the total flooded area is calculated in square meters by multiplying the identified flooded pixels by their area. The results are printed for analysis:
+You can calculate the total flooded and non-flooded areas in square meters using the following code:
 
 javascript
 
@@ -128,12 +137,9 @@ var nonFloodArea = nonFloodedArea.multiply(ee.Image.pixelArea()).reduceRegion({
   maxPixels: 1e10
 });
 
-print('Flooded Area (m^2): ', floodArea.get('VV'));
-print('Non-Flooded Area (m^2): ', nonFloodArea.get('VV'));
+Step 10: Visualize Flood Statistics with a Pie Chart
 
-Visualizing the Data
-
-A simple pie chart is generated to provide a visual representation of the ratio between flooded and non-flooded areas:
+Visualize the flooded and non-flooded areas using a simple pie chart:
 
 javascript
 
@@ -150,12 +156,13 @@ var chart = ui.Chart.array.values({
 
 print(chart);
 
-Exporting the Results
+Step 11: Export Flood and Non-Flood Data
 
-The results of the flood mapping are exported as GeoTIFF files for further analysis or integration into GIS platforms. The files can be used to create flood hazard maps or for use in early warning systems:
+Export the flood and non-flooded areas as GeoTIFF files for further analysis in GIS software:
 
 javascript
 
+// Export the flooded area as a TIFF file
 Export.image.toDrive({
   image: floodedArea,
   description: 'FloodedArea_TIFF',
@@ -166,6 +173,7 @@ Export.image.toDrive({
   fileFormat: 'GeoTIFF'
 });
 
+// Export the non-flooded area as a TIFF file
 Export.image.toDrive({
   image: nonFloodedArea,
   description: 'NonFloodedArea_TIFF',
@@ -178,4 +186,14 @@ Export.image.toDrive({
 
 Conclusion
 
-The Flood Mapping and Monitoring in Nigeria project utilizes Sentinel-1 SAR data and Google Earth Engine to effectively map and monitor flood events in the Niger Delta region. The code provided helps to identify, visualize, and export flood areas, allowing for better flood management and mitigation strategies. Through this project, we aim to contribute to reducing the devastating impacts of floods on communities by providing timely and actionable flood mapping data.
+The Flood Mapping and Monitoring in Nigeria project demonstrates the power of remote sensing and geospatial technology in disaster risk management. By using SAR imagery from Sentinel-1, we can identify flood-prone areas in real-time, calculate the extent of the flooding, and provide valuable data to stakeholders for effective disaster response.
+
+The project can be further expanded by integrating rainfall data, digital elevation models, and socio-economic data to improve flood prediction models. Additionally, the use of machine learning algorithms can help in automating the process and increasing the accuracy of flood detection.
+
+Feel free to fork, contribute, and expand the project to suit other regions or applications.
+License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+Acknowledgements
+
+We would like to acknowledge the use of Google Earth Engine and the European Space Agency's Copernicus program for providing the Sentinel-1 SAR dataset. This project would not have been possible without their contributions to the field of remote sensing and geospatial analysis.
