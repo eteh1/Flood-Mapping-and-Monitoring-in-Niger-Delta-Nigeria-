@@ -187,6 +187,7 @@ Export.image.toDrive({
 Conclusion
 
 The Flood Mapping and Monitoring in Nigeria project demonstrates the power of remote sensing and geospatial technology in disaster risk management. By using SAR imagery from Sentinel-1, we can identify flood-prone areas in real-time, calculate the extent of the flooding, and provide valuable data to stakeholders for effective disaster response.
+https://code.earthengine.google.com/08bca8b64c0894e29cee5117346c22fa
 
 The project can be further expanded by integrating rainfall data, digital elevation models, and socio-economic data to improve flood prediction models. Additionally, the use of machine learning algorithms can help in automating the process and increasing the accuracy of flood detection.
 
