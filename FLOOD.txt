@@ -1,0 +1,181 @@
+Creating a New Repository and Automating Flood Mapping and Monitoring in Nigeria
+
+The process of creating a new Git repository using the command line, combined with running code for flood mapping and monitoring, can provide a powerful workflow for managing geospatial data and analysis projects. The steps below outline both aspects in detail: creating a GitHub repository and implementing a flood mapping and monitoring workflow using Sentinel-1 SAR data in Google Earth Engine (GEE).
+Step 1: Setting up a GitHub Repository Using Command Line
+
+A GitHub repository allows you to version-control your project, making it easier to track changes, collaborate, and manage the codebase. Here's a breakdown of the commands to create and initialize a Git repository, commit the project files, and push them to GitHub.
+
+    Create a README file:
+
+    bash
+
+echo "# Flood-Mapping-and-Monitoring-in-Nigeria" >> README.md
+
+This command creates a README.md file, which is essential in any repository. It helps describe the project and its purpose.
+
+Initialize a Git repository:
+
+csharp
+
+git init
+
+This command initializes a new Git repository in your local project folder, setting up version control.
+
+Add the README file to the repository:
+
+csharp
+
+git add README.md
+
+This command stages the README.md file for committing. It indicates the file is ready to be tracked by Git.
+
+Commit the staged files:
+
+sql
+
+git commit -m "first commit"
+
+A commit represents a snapshot of your project. Here, the -m option allows you to include a message ("first commit") explaining what the commit contains.
+
+Create the main branch:
+
+css
+
+git branch -M main
+
+This command renames the current branch to main, which is typically the default branch in most repositories.
+
+Add the remote repository:
+
+scss
+
+git remote add origin git@github.com:eteh1/Flood-Mapping-and-Monitoring-in-Nigeria.git
+
+This command links your local repository to the remote repository hosted on GitHub, enabling you to push code and collaborate online.
+
+Push the code to the remote repository:
+
+css
+
+    git push -u origin main
+
+    This command pushes your local commits to the main branch of the remote repository, making the project available online.
+
+Step 2: Automating Flood Mapping Using Sentinel-1 SAR in Google Earth Engine
+
+Flood mapping and monitoring can be efficiently conducted using Sentinel-1 Synthetic Aperture Radar (SAR) data. SAR has the advantage of penetrating clouds and capturing high-resolution data, making it ideal for flood detection. In this section, we'll explain how to automate flood detection in Nigeria using Google Earth Engine (GEE).
+1. Define the Area of Interest (AOI)
+
+The first step in the flood mapping process is to define the geographic region of interest. In this example, we are using a predefined asset for the Niger Delta in Nigeria:
+
+javascript
+
+var aoi = projects/ee-desmondeteh/assets/Niger_Delta_;
+
+This line loads a predefined boundary for the Niger Delta. The asset can be uploaded from a shapefile or manually drawn in GEE.
+2. Define the Time Period for Analysis
+
+Flood events are time-specific, so it’s crucial to filter the data by the appropriate date range:
+
+javascript
+
+var startDate = '2022-09-20';
+var endDate = '2022-10-30';
+
+In this case, we are looking for flood events occurring between September and October 2022.
+3. Load and Filter Sentinel-1 SAR Data
+
+Sentinel-1 is an active radar mission that provides reliable data for flood detection. By filtering based on time, location, and image characteristics, you can narrow down the dataset to the images that are relevant for flood detection:
+
+javascript
+
+var sentinel1 = ee.ImageCollection('COPERNICUS/S1_GRD')
+                  .filterBounds(aoi)
+                  .filterDate(startDate, endDate)
+                  .filter(ee.Filter.eq('instrumentMode', 'IW'))
+                  .filter(ee.Filter.eq('orbitProperties_pass', 'DESCENDING'))
+                  .filter(ee.Filter.eq('resolution_meters', 10))
+                  .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
+                  .select('VV');
+
+Here, we filter the data based on orbit pass, polarization, and resolution, selecting only the Vertical-Vertical (VV) polarization images, which are useful for detecting changes in surface water.
+4. Create a Composite Image
+
+To create a clearer image that reduces noise, we use the median composite:
+
+javascript
+
+var medianImage = sentinel1.median().clip(aoi);
+
+This step creates a median image of all the filtered SAR data, clipping it to the area of interest.
+5. Identify Flooded Areas
+
+Flood detection is achieved by applying a threshold to the radar backscatter. Areas with lower radar backscatter values (below the threshold) typically indicate water surfaces:
+
+javascript
+
+var floodThreshold = -11;
+var floodedArea = medianImage.lt(floodThreshold).selfMask();
+var nonFloodedArea = medianImage.gte(floodThreshold).selfMask();
+
+In this case, a threshold of -11 is applied, but it can be adjusted based on the specific characteristics of the flood event and region.
+6. Display Results on the Map
+
+The results are displayed on the map with different colors representing flooded and non-flooded areas:
+
+javascript
+
+Map.centerObject(aoi, 10);
+Map.addLayer(floodedArea, {palette: ['red'], min: 0, max: 1}, 'Flooded Area');
+Map.addLayer(nonFloodedArea, {palette: ['blue'], min: 0, max: 1}, 'Non-Flooded Area');
+
+Flooded areas are shown in red, while non-flooded areas are shown in blue.
+7. Calculate Flood Area Statistics
+
+To quantify the extent of the flooding, the code calculates the total flooded area in square meters:
+
+javascript
+
+var floodArea = floodedArea.multiply(ee.Image.pixelArea()).reduceRegion({
+  reducer: ee.Reducer.sum(),
+  geometry: aoi,
+  scale: 10,
+  crs: 'EPSG:4326',
+  maxPixels: 1e10
+});
+
+The same calculation is done for non-flooded areas.
+8. Visualize Flood Data
+
+A pie chart provides a visual comparison of flooded versus non-flooded areas:
+
+javascript
+
+var chart = ui.Chart.array.values({
+  array: [floodArea.get('VV'), nonFloodArea.get('VV')],
+  axis: 0
+})
+.setChartType('PieChart')
+.setOptions({
+  title: 'Flood vs Non-Flood Areas',
+  slices: [{color: 'red'}, {color: 'blue'}],
+  labels: ['Flooded Area', 'Non-Flooded Area']
+});
+
+9. Export the Flood Maps
+
+Finally, the flooded and non-flooded areas are exported as GeoTIFFs for further analysis:
+
+javascript
+
+Export.image.toDrive({
+  image: floodedArea,
+  description: 'FloodedArea_TIFF',
+  scale: 100,
+  region: aoi,
+  crs: 'EPSG:4326',
+  maxPixels: 1e8,
+  fileFormat: 'GeoTIFF'
+});
+
+The exported TIFF files can be used in other GIS platforms or for reporting purposes.
